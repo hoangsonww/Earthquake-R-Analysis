@@ -1,0 +1,26 @@
+name: R-CMD-check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  R-CMD-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install dependencies
+        run: |
+          Rscript -e 'install.packages(c("ggplot2","maps","ggmap","dplyr","lubridate","scales","viridis","tidyr","forcats","rmarkdown"), repos="https://cloud.r-project.org/")'
+
+      - name: Run script
+        run: Rscript earthquake_viz_complete.R
+
+      - name: Render report
+        run: Rscript -e 'rmarkdown::render("earthquake_report.Rmd")'
