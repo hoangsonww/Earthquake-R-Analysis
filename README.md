@@ -65,7 +65,7 @@ All plots display in sequence when you run the script in R (or RStudio). Ideal f
 </p>
 
 <p align="center">
-  <img src="img/mag-distribute" width="100%" />
+  <img src="img/mag-distribute.png" width="100%" />
 </p>
 
 <p align="center">
