@@ -1,4 +1,5 @@
 # Earthquake Visualization & Analysis
+
 A comprehensive R script that fetches global earthquake data (M ≥ 2.5 over the past 30 days) from the USGS and generates a suite of 15 exploratory and analytical plots, including mapping, distributional summaries, time-series, heatmaps, and a regression analysis.
 
 ## Table of Contents
