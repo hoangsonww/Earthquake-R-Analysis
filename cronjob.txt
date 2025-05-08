@@ -1,0 +1,8 @@
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of week (0 - 6) (Sunday=0)
+# │ │ │ │ │
+# │ │ │ │ │
+  0   2   *   *   *   bash /path/to/project/scripts/build_report.sh >> /path/to/project/logs/cron.log 2>&1
