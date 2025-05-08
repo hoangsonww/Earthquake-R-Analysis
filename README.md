@@ -76,6 +76,24 @@ All plots display in sequence when you run the script in R (or RStudio). Ideal f
   <img src="img/regression.png" width="100%" />
 </p>
 
+<p align="center">
+  <img src="img/mag-depth.png" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/depth-mag.png" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/daily-counts.png" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/epicenters.png" width="100%" />
+</p>
+
+_and more..._
+
 ## Prerequisites
 
 * **R** (≥ 4.0) installed on your system
