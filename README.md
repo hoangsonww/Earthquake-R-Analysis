@@ -52,6 +52,30 @@ All plots display in sequence when you run the script in R (or RStudio). Ideal f
     * Prints summary (coefficients, R², p-values)
     * Scatter plot with regression line & annotation
 
+<p align="center">
+  <img src="img/map.png" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/map-2.png" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/quake-counts.png" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/mag-distribute" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/violin.png" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/regression.png" width="100%" />
+</p>
+
 ## Prerequisites
 
 * **R** (≥ 4.0) installed on your system
