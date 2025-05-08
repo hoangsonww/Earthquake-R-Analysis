@@ -1,0 +1,199 @@
+---
+title: "30-Day Earthquake Analysis"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    code_folding: hide
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo       = TRUE,
+  warning    = FALSE,
+  message    = FALSE,
+  fig.width  = 8,
+  fig.height = 5
+)
+# Install & load packages
+pkgs <- c("ggplot2","maps","ggmap","dplyr","lubridate","scales","viridis","tidyr","forcats")
+for(p in pkgs) if(!requireNamespace(p, quietly=TRUE)) install.packages(p)
+lapply(pkgs, library, character.only=TRUE)
+````
+
+# 1. Data Loading & Preparation
+
+```{r load-data}
+url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.csv"
+quakes <- read.csv(url, stringsAsFactors=FALSE) %>%
+  mutate(
+    time         = as.POSIXct(time, format="%Y-%m-%dT%H:%M:%S", tz="UTC"),
+    date         = as.Date(time),
+    hour         = hour(time),
+    weekday      = wday(time, label=TRUE, abbr=TRUE),
+    mag_cat      = cut(mag, breaks=c(2.5,4,5,6,Inf),
+                       labels=c("2.5–4","4–5","5–6","6+")),
+    place_simple = fct_lump(factor(place), n=10)
+  )
+world_map <- borders("world", colour="gray50", fill="gray80")
+```
+
+# 2. Epicenter Map: Size & Color by Magnitude
+
+```{r p1}
+ggplot() + world_map +
+  geom_point(data=quakes, aes(longitude, latitude, size=mag, colour=mag), alpha=0.6) +
+  scale_size_continuous(name="Magnitude") +
+  scale_color_viridis(name="Magnitude", option="plasma") +
+  ggtitle("Epicenters: M ≥ 2.5 (Past 30 Days)") +
+  theme_minimal()
+```
+
+# 3. Epicenter Map: Color by Depth
+
+```{r p2}
+ggplot() + world_map +
+  geom_point(data=quakes, aes(longitude, latitude, colour=depth), alpha=0.6, size=1.5) +
+  scale_color_viridis(name="Depth (km)", option="magma") +
+  ggtitle("Epicenters Colored by Depth") +
+  theme_minimal()
+```
+
+# 4. Histogram of Magnitudes
+
+```{r p3}
+ggplot(quakes, aes(mag)) +
+  geom_histogram(binwidth=0.2, fill="steelblue", colour="white") +
+  scale_x_continuous(breaks=pretty_breaks()) +
+  labs(title="Magnitude Distribution", x="Magnitude", y="Count") +
+  theme_minimal()
+```
+
+# 5. Density Plot of Magnitudes
+
+```{r p4}
+ggplot(quakes, aes(mag)) +
+  geom_density(fill="steelblue", alpha=0.7) +
+  labs(title="Magnitude Density", x="Magnitude", y="Density") +
+  theme_minimal()
+```
+
+# 6. Histogram of Depths
+
+```{r p5}
+ggplot(quakes, aes(depth)) +
+  geom_histogram(binwidth=10, fill="orchid", colour="white") +
+  labs(title="Depth Distribution", x="Depth (km)", y="Count") +
+  theme_minimal()
+```
+
+# 7. Boxplot: Depth by Magnitude Category
+
+```{r p6}
+ggplot(quakes, aes(mag_cat, depth, fill=mag_cat)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete=TRUE, option="cividis", name="Mag. Cat.") +
+  labs(title="Depth by Magnitude Category", x="Magnitude Category", y="Depth (km)") +
+  theme_minimal()
+```
+
+# 8. Scatter Plot: Magnitude vs. Depth (LOESS)
+
+```{r p7}
+ggplot(quakes, aes(depth, mag)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method="loess", se=FALSE, colour="darkred") +
+  labs(title="Magnitude vs. Depth", x="Depth (km)", y="Magnitude") +
+  theme_minimal()
+```
+
+# 9. Time-Series: Daily Counts
+
+```{r p8}
+daily_counts <- quakes %>% count(date)
+ggplot(daily_counts, aes(date, n)) +
+  geom_line(size=1) + geom_point(size=2) +
+  scale_x_date(date_labels="%b %d", date_breaks="5 days") +
+  labs(title="Daily Earthquake Counts", x="Date", y="Count") +
+  theme_minimal()
+```
+
+# 10. Heatmap: Counts by Weekday & Hour
+
+```{r p9}
+heat_data <- quakes %>%
+  count(weekday, hour) %>%
+  complete(weekday, hour, fill=list(n=0))
+ggplot(heat_data, aes(hour, weekday, fill=n)) +
+  geom_tile(color="white") +
+  scale_fill_viridis(name="Count", option="plasma") +
+  labs(title="Quake Counts by Weekday & Hour (UTC)", x="Hour", y="Weekday") +
+  theme_minimal()
+```
+
+# 11. Cumulative Earthquake Count Over Time
+
+```{r p10}
+cum_data <- quakes %>% arrange(time) %>% mutate(cum = row_number())
+ggplot(cum_data, aes(time, cum)) +
+  geom_line() +
+  labs(title="Cumulative Earthquake Count Over Time",
+       x="Time (UTC)", y="Cumulative Count") +
+  theme_minimal()
+```
+
+# 12. Top 10 Reported Locations
+
+```{r p11}
+top_places <- quakes %>% count(place_simple) %>% arrange(desc(n))
+ggplot(top_places, aes(reorder(place_simple, n), n)) +
+  geom_col(fill="darkslateblue") +
+  coord_flip() +
+  labs(title="Top 10 Reported Locations", x="", y="Count") +
+  theme_minimal()
+```
+
+# 13. Violin Plot: Magnitude by Weekday
+
+```{r p12}
+ggplot(quakes, aes(weekday, mag, fill=weekday)) +
+  geom_violin() +
+  scale_fill_viridis(discrete=TRUE, option="turbo", name="Weekday") +
+  labs(title="Magnitude Distribution by Weekday", x="Weekday", y="Magnitude") +
+  theme_minimal()
+```
+
+# 14. Faceted Map by Magnitude Category
+
+```{r p13}
+ggplot() + world_map +
+  geom_point(data=quakes, aes(longitude, latitude), alpha=0.6, size=1) +
+  facet_wrap(~ mag_cat) +
+  labs(title="Epicenters Faceted by Magnitude Category") +
+  theme_minimal()
+```
+
+# 15. Regression Analysis: Magnitude \~ Depth
+
+```{r p14}
+model_depth_mag <- lm(mag ~ depth, data = quakes)
+cat("\n===== Linear Regression: mag ~ depth =====\n")
+print(summary(model_depth_mag))
+
+ggplot(quakes, aes(depth, mag)) +
+  geom_point(alpha=0.4) +
+  geom_smooth(method="lm", se=TRUE, colour="blue") +
+  labs(
+    title    = "Linear Regression: Magnitude vs. Depth",
+    subtitle = paste0(
+      "R² = ", signif(summary(model_depth_mag)$r.squared, 3),
+      " | p-value = ", signif(summary(model_depth_mag)$coefficients[2,4], 3)
+    ),
+    x = "Depth (km)",
+    y = "Magnitude"
+  ) +
+  theme_minimal()
+```
